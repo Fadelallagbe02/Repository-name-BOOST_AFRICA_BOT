@@ -1,9 +1,13 @@
 import os
 import asyncio
+import threading
 from flask import Flask, jsonify
-from scheduler import publish
+from scheduler import publish, main as scheduler_main
 
 app = Flask(__name__)
+
+_scheduler_started = False
+_scheduler_lock = threading.Lock()
 
 
 @app.get("/")
@@ -15,7 +19,8 @@ def home():
             "BetBoostAfrica",
             "TechBoostAfrica24",
             "CryptoBoostAfrica"
-        ]
+        ],
+        "scheduler": "running"
     })
 
 
@@ -43,10 +48,22 @@ def run_slot(slot):
         }), 500
 
 
-if __name__ == "__main__":
-    port = int(os.getenv("PORT", "10000"))
+def start_scheduler():
+    asyncio.run(scheduler_main())
 
-    app.run(
-        host="0.0.0.0",
-        port=port
-    )
+
+def ensure_scheduler():
+    global _scheduler_started
+
+    with _scheduler_lock:
+        if not _scheduler_started:
+            thread = threading.Thread(
+                target=start_scheduler,
+                daemon=True
+            )
+            thread.start()
+            _scheduler_started = True
+            print("🤖 BOOST AFRICA MANAGER — Scheduler démarré")
+
+
+ensure_scheduler()
