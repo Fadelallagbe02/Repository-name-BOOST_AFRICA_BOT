@@ -11,3 +11,7 @@ test_publish.py
 main_backup.py
 scheduler_backup.py
 scheduler_before_web.py
+.env
+__pycache__/
+*.pyc
+generated_images/

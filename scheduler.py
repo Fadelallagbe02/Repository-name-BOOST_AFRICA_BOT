@@ -5,6 +5,8 @@ from datetime import datetime
 from dotenv import load_dotenv
 from telegram import Bot
 from cross_promo import CROSS_PROMO
+from visual_generator import generate_visual
+from content_generator import generate_content
 
 load_dotenv()
 
@@ -92,15 +94,19 @@ async def publish(slot):
             continue
 
         message = (
-                MESSAGES[slot][category][0]
+                generate_content(category, slot)
                 + CROSS_PROMO[category]
             )
 
         try:
-            await bot.send_message(
-                chat_id=channel,
-                text=message
-            )
+            visual_path = generate_visual(category, slot, message)
+
+            with open(visual_path, "rb") as photo:
+                await bot.send_photo(
+                    chat_id=channel,
+                    photo=photo,
+                    caption=message
+                )
 
             history[today].append(key)
             save_history(history)
