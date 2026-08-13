@@ -1,0 +1,10 @@
+.env
+__pycache__/
+*.pyc
+history.json
+members.json
+*_backup.json
+scheduler_v2_backup.py
+history_before_test.json
+test_cross.py
+test_publish.py
