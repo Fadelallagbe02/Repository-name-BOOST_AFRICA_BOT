@@ -8,3 +8,6 @@ scheduler_v2_backup.py
 history_before_test.json
 test_cross.py
 test_publish.py
+main_backup.py
+scheduler_backup.py
+scheduler_before_web.py
