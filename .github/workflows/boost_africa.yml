@@ -10,18 +10,34 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - name: Install dependencies
         run: pip install -r requirements.txt
+
       - name: Publish BOOST AFRICA
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: python scheduler.py --once
+        run: |
+          HOUR=$(date -u +%H)
+
+          if [ "$HOUR" = "07" ]; then
+            python scheduler.py --once --slot 08:00
+          elif [ "$HOUR" = "12" ]; then
+            python scheduler.py --once --slot 13:00
+          elif [ "$HOUR" = "18" ]; then
+            python scheduler.py --once --slot 19:00
+          else
+            echo "❌ Créneau GitHub inattendu : UTC $HOUR"
+            exit 1
+          fi
