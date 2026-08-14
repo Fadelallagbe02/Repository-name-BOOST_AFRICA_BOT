@@ -5,7 +5,18 @@ on:
     - cron: "0 7 * * *"
     - cron: "0 12 * * *"
     - cron: "0 18 * * *"
+
   workflow_dispatch:
+    inputs:
+      slot:
+        description: "Créneau à publier"
+        required: true
+        default: "08:00"
+        type: choice
+        options:
+          - "08:00"
+          - "13:00"
+          - "19:00"
 
 jobs:
   publish:
@@ -29,15 +40,25 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            SLOT="${{ inputs.slot }}"
+            echo "🧪 Lancement manuel"
+            echo "🎯 Slot demandé : $SLOT"
+            python scheduler.py --once --slot "$SLOT"
+            exit $?
+          fi
+
           HOUR=$(date -u +%H)
 
+          echo "🕐 Heure UTC : $HOUR"
+
           if [ "$HOUR" = "07" ]; then
-            python scheduler.py --once --slot 08:00
+            python scheduler.py --once --slot "08:00"
           elif [ "$HOUR" = "12" ]; then
-            python scheduler.py --once --slot 13:00
+            python scheduler.py --once --slot "13:00"
           elif [ "$HOUR" = "18" ]; then
-            python scheduler.py --once --slot 19:00
+            python scheduler.py --once --slot "19:00"
           else
-            echo "❌ Créneau GitHub inattendu : UTC $HOUR"
+            echo "❌ Créneau automatique inattendu : UTC $HOUR"
             exit 1
           fi
